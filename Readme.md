@@ -1,111 +1,111 @@
+# Project Diagrams and Screenshots
 
-# Auto-Scaling Web Application on AWS
-
-## Overview
-A secure, highly available, and auto-scaling web application utilizing:
-- EC2 instances
-- Application Load Balancer (ALB)
-- Auto Scaling Groups (ASG)
-- Amazon RDS
-- CloudWatch and SNS for monitoring
-
-## Features
-
-- Load-balanced traffic through ALB
-- Auto scaling based on CPU utilization
-- Web application hosted on EC2 instances across multiple Availability Zones
-- Monitoring and notifications via CloudWatch and SNS
-- RDS Multi-AZ database backend
-- IAM role-based access control
+**Visual Documentation of the AWS Scalable Web Application Infrastructure**
 
 ---
 
-## Tech Stack
+## 1. Architecture Diagram
 
-- **Amazon EC2**
-- **Application Load Balancer (ALB)**
-- **Auto Scaling Group (ASG)**
-- **CloudWatch + SNS**
-- **IAM Roles**
-- **Amazon RDS**
+High-level overview of the infrastructure components.
+
+![Architecture](./images/Diagram.png)
 
 ---
 
-## Architecture Diagram
+## 2. VPC Setup
 
-![Architecture](images/Diagram.png)
+Custom Virtual Private Cloud with isolated networking components.
 
----
-
-## Step-by-Step Deployment Guide
-
-### 1. VPC Setup
-- Use the default VPC or create a new one
-- **VPC Name**: ScalableAppVPC-vpc
-- Create 2 public subnets (for EC2) and 2 private subnets (for RDS)
-- Attach an Internet Gateway and configure route tables
-
-### 2. Security Groups
-- **Security Group Name**: ALP-SecurityGroups
-- EC2 SG: Allow HTTP (80), HTTPS (443), SSH (22 from a specific IP)
-- ALB SG: Allow HTTP/HTTPS from 0.0.0.0/0
-- RDS SG: Allow database port access only from EC2 SG
-
-### 3. IAM Role for EC2
-Attach the following permissions:
-- `AmazonEC2ReadOnlyAccess`
-- `CloudWatchAgentServerPolicy`
-- `AmazonSSMManagedInstanceCore`
-- `AmazonS3Rlole`
-
-### 4. Launch Template
-- **Template Name**: web-app-template
-- AMI: Amazon Linux 2 or Ubuntu
-- Instance Type: `t2.micro`
-- Attach IAM Role
-
-**User Data Script:**
-```bash
-#!/bin/bash
-yum update -y
-yum install -y httpd
-systemctl start httpd
-systemctl enable httpd
-echo "<h1>Welcome to My Scalable Web App</h1>" > /var/www/html/index.html
-```
-
-### 5. Application Load Balancer (ALB)
-- **ALB Name**: web-ALB
-- Listener on port 80
-- Target group: EC2
-- Subnets: public subnet-1, public subnet-2
-- Security Groups: ALP-SecurityGroups
-
-### 6. Auto Scaling Group (ASG)
-- **ASG Name**: web-ASG
-- Launch Template: web-app-template
-- Min Size: 2, Max Size: 5, Desired Capacity: 2
-- VPC Zone Identifier: subnet-1, subnet-2
-- Scale-out policy: CPU utilization > 80%
-
-### 7. CloudWatch Alarm
-Create an alarm using:
-- Alarm Name: SNS Alarm
-- Metric: CPUUtilization
-- Threshold: 80%
-
-### 8. RDS - Multi-AZ DB
-- **Engine**: MySQL or PostgreSQL
-- **Multi-AZ Deployment**: Enabled
-- **VPC Name**: ScalableAppVPC-vpc
-- **Public Access**: Disabled
-- **Security Group**: Same as EC2
-- **Connection**: Use RDS endpoint in application code
+![VPC](./images/VPC.png)
 
 ---
 
-## Testing the Application
-Access the application using the ALB DNS name:
-```bash
-http://web-ALB-1683263015.us-east-1.elb.amazonaws.com
-```
+## 3. Subnet Configuration
+
+- **2 Public Subnets** (for EC2 Instances)
+- **2 Private Subnets** (for RDS Database)
+
+![Subnets](./images/Subnets.png)
+
+---
+
+## 4. Security Groups
+
+- **EC2 Security Group**: Allows HTTP (80), HTTPS (443), and SSH (22)
+- **ALB Security Group**: Allows inbound traffic from the internet
+
+![Security Groups](./images/SecurityGroup.png)
+
+---
+
+## 5. Launch Template / EC2 Configuration
+
+- **AMI**: Amazon Linux 2  
+- **Instance Type**: `t2.micro`  
+- **User Data**: Web server installation script (e.g., Apache/Flask setup)
+
+![Launch Template](./images/LuanchTemplate.png)
+
+---
+
+## 6. EC2 Instances
+
+Instances automatically launched and managed by Auto Scaling Group.
+
+![Instances](./images/Instances.png)
+
+---
+
+## 7. Application Load Balancer (ALB)
+
+- **Internet-facing**  
+- **Port**: 80 (HTTP)  
+- **Target Group**: Points to EC2 Instances
+
+![ALB](./images/LoadBalancer.png)
+
+---
+
+## 8. Auto Scaling Group (ASG)
+
+- **Min**: 2, **Desired**: 2, **Max**: 5  
+- **Scaling Policy**: Based on CPU Utilization
+
+![ASG](./images/AutoScaling.png)
+
+---
+
+## 9. Amazon RDS (Multi-AZ)
+
+- **Engine**: MySQL or PostgreSQL  
+- **Deployment**: Multi-AZ for high availability  
+- **Access**: Private subnets only, no public access
+
+![RDS](./images/RDS-DB.png)
+
+---
+
+## 10. Monitoring with CloudWatch & SNS
+
+- CloudWatch Alarms to monitor CPU usage  
+- SNS Topic for sending email notifications
+
+![CloudWatch](./images/Cloudwatch.png)
+
+---
+
+## 11. Alarm Actions
+
+- **Scale Out**: CPU > 80%  
+- **Scale In**: CPU < 30%  
+- **Notifications**: Email alerts via SNS
+
+![Alarms](./images/SNS.png)
+
+---
+
+## 12. Web Application - Live Test
+
+Website successfully accessed using the ALB DNS name.
+
+![Web Page](./images/WebPage.png)
